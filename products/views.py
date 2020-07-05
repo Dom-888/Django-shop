@@ -1,4 +1,6 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, reverse, get_object_or_404
+from django.contrib import messages
+from django.db.models import Q # Generate a search query
 from .models import Product
 
 # Create your views here.
@@ -18,8 +20,24 @@ def all_products(request):
 def product_detail(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
 
+    # Handle the search query
+    query = None
+
+    if request.GET:
+        if 'q' in request.GET:
+            query = request.GET['q']
+            # Se la query è vuota
+            if not query:
+                messages.error(request, "You didn't enter any search criteria!")
+                return redirect(reverse('products'))
+
+            # Cerca sia nel nome del prodotto, sia nella descrizione
+            queries = Q(name__icontains=query) | Q(description__icontains=query)
+            products = products.filter(queries)
+
     context = {
         'product': product,
+        'search_term': query
     }
 
     return render(request, 'products/product_detail.html', context) 
