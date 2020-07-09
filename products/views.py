@@ -28,6 +28,8 @@ def all_products(request):
                 sortkey = 'lower_name'
                 # Crea un'annotation, ovvero un valore temporaneo
                 products = products.annotate(lower_name=Lower('name'))
+            if sortkey == 'category':
+                sortkey = 'category__name'
             
             if 'direction' in request.GET:
                 direction = request.GET['direction']
