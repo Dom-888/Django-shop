@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.shortcuts import get_object_or_404
+from products.models import Product
 from decimal import Decimal # Più preciso di float (no roundign error) e pertanto più adatto alla transazioni monetarie
 
 # Keep track of the item in the shopping bag, la differenza con context nelle views è che questo è stato inserito in setting.py e di conseguenza è disponibile in tutte le apps
@@ -7,9 +9,21 @@ from decimal import Decimal # Più preciso di float (no roundign error) e pertan
 def bag_contents(request):
 
     # Variabili iniziali
-    bag_items = []
+    bag_items = [] # Lista di dizionari, ogniuno dei quali contiene i dettagli di un prodotto nella bag
     total = 0
     product_count = 0
+    bag = request.session.get('bag', {})
+
+    for item_id, quantity in bag.items(): # Questa è la bag from the session
+        product = get_object_or_404(Product, pk=item_id) # pk sta per Primary Key
+        total += quantity * product.price
+        product_count += quantity
+        # Dizionario del prodotto da aggiungere/aggiornare
+        bag_items.append({
+            'item_id':item_id,
+            'quantity': quantity,
+            'product': product,
+        })
 
     # Se il totale è inferiore alla soglia, le spedizioni sono uguali al 10% del totale
     if total < settings.FREE_DELIVERY_THREESHOLD:
@@ -29,7 +43,7 @@ def bag_contents(request):
         'total': total,
         'product_count': product_count,
         'delivery': delivery,
-        'free_delivery_threeshold': settings.FREE_DELIVERY_THREESHOLD, # Nota che questa variabile ha un'origine esterna alla pagina
+        'free_delivery_threeshold': settings.FREE_DELIVERY_THREESHOLD, # Nota che questa variabile ha un'origine esterna al file
         'grand_total': grand_total
 
     }
