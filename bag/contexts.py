@@ -36,7 +36,7 @@ def bag_contents(request):
                 # Dict del prodotto da aggiungere/aggiornare
                 bag_items.append({
                     'item_id':item_id,
-                    'quantity': item_data,
+                    'quantity': quantity,
                     'product': product,
                     'size': size,
                 })
