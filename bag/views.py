@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect, reverse, HttpResponse
+from django.contrib import messages # Necessario per i toasts
+from products.models import Product
 
 # Create your views here.
 
@@ -7,6 +9,9 @@ def view_bag(request):
 
 # Raccoglie dati products/product_detail.html
 def add_to_bag(request, item_id):
+
+    product = Product .objects.get(pk=item_id)
+
     quantity = int(request.POST.get('quantity'))
 
     # Necessario per ritornare alla stessa pagina una volta che l'oggetto è stato inserito nel carrello
@@ -36,9 +41,9 @@ def add_to_bag(request, item_id):
             bag[item_id] += quantity
         else:
             bag[item_id] = quantity
+            messages.success(request, f'Added{product.name} to your bag')
 
     request.session['bag'] = bag
-    print(request.session['bag'])
     return redirect(redirect_url)
 
 
